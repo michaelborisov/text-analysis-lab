@@ -105,3 +105,4 @@ venv.bak/
 
 lab_text_analysis/*
 .idea
+*.json
