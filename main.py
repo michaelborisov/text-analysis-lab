@@ -1,6 +1,6 @@
 import json
 
-from file_utils import FileUtils
+from src.file_utils import FileUtils
 
 FILE_NAME = 'data/jsons/Aareal-AnnualReport-2010.json'
 TYPE = 'type'
