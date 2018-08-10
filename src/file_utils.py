@@ -16,7 +16,4 @@ class FileUtils:
         filedata = filedata.replace('}', '},')
         filedata = filedata[0:len(filedata) - 2] + filedata[len(filedata) - 1:]
         filedata = '[' + filedata + ']'
-
-        # Write the file out again
-        with open(file_path, 'w') as my_file:
-            my_file.write(filedata)
+        return filedata
