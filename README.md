@@ -63,6 +63,9 @@ output topics
 - Visualization: use library `plotly` to draw the charts
 
 ### TF/IDF
+![alt text](img/deutsche_bank_TFIDF_keywords_trend.png)
+![alt text](img/BMW_TFIDF_keywords_trends_increase.png)
+![alt text](img/BMW_TFIDF_keywords_trends.png)
 
 ### LDA
 ![alt text](img/commerzbank_report.png)
