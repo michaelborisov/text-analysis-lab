@@ -31,6 +31,7 @@ Apply machine learning techniques to find topics of paragraphs of documents.
 - Our goals: 
     1. Find the most important words for certain text; 
     2. Learn the trend for this words during several years.
+    3. Apply LSI technique at TF/IDF matrix to implement an information query program.
 
 ### LDA
 - Stands for **Latent Dirichlet Allocation**
