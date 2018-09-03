@@ -1,79 +1,48 @@
 ## Overview
-- use programming language `python` with library `spacy`
-- apply methods `TF/IDF` and `LDA` to analysis the text 
+Given set of financial reports, issued by companies, which are publicly traded. 
+Apply machine learning techniques to find topics of paragraphs of documents.
+
+- Use programming language`python3.4`;
+- Use libraries `spacy`, `sklearn`;
+- Apply methods `TF/IDF` and `LDA` to analyze given texts. 
+
 <br>
 
 ## Folder/Structure
-- [html](/html/) contain all the html-version files including graphs
-- [img](/img/) contain the charts from the result of two methods `TF/IDF` and `LDA`
-- [presentation](/presentation/) has the slides of our presentation
-- [src](/src/) has all the configurations we need
-- file [LDA](/LDA.ipynb) apply the method `LDA`
-- file [TFIDF](/TFIDF_company_chart.ipynb) apply the method `TF/IDF`
+- [html](/html/) contains html-version of .ipynb files;
+- [img](/img/) contains the charts from the result of two methods `TF/IDF` and `LDA`;
+- [presentation](/presentation/) has the slides of our presentation;
+- [src](/src/) has all the configurations we needed;
+- file [LDA](/LDA.ipynb) apply the method `LDA`;
+- file [TFIDF](/TFIDF_company_chart.ipynb) apply the method `TF/IDF`.
 
 <br>
 
 ## Theory and Algorithm
 
-### preprocessing
-- remove all the unnecessary symbols
-- remove all the stop words
-- remove all the numbers
-- transfer all the words into lowercase
-- classify all the words with their lemma
+### Preprocessing
+- remove all the unnecessary symbols;
+- remove all the stop words;
+- remove all the numbers;
+- classify all the words with their lemma.
 
 ### TF/IDF
-- Stand for **term frequency-inverse document frequency**
-- Our goal: find out the most important words from certain text and learn the key words trend during several years
-- Processing: input text file &rarr; results
-* take BMW as example
-```
-input [BMW-AnnualReport-2010 to 2017]
-do Reprocessing
-output content
-```
-```
-input content
-do TF/IDF
-output TF/IDF-matrix
-```
-- Result: all the words with importance value
+- Stands for **term frequency-inverse document frequency**
+- Our goal: 
+1) Find the most important words for certain text; 
+2) Learn the trend for this words during several years.
 
 ### LDA
-- Stand for **Latent Dirichlet Allocation**
-- Our goal: find out several topics from certain text, know the main pages of certain topic and learn the topics trend during several years
-- Processing: train the model &rarr; input text file &rarr; results 
-- take Commerzbank as example
-```
-input [many reports from the bands]
-do Preprocessing
-do Train the model
-output model
-```
-```
-input commerzbank_report
-do LDA
-output topics
-```
-- Result: topics of the text
-
-<br>
-
-## Result
-- Visualization: use library `plotly` to draw the charts
-
-### TF/IDF
-![alt text](img/deutsche_bank_TFIDF_keywords_trend.png)
-![alt text](img/BMW_TFIDF_keywords_trends_increase.png)
-![alt text](img/BMW_TFIDF_keywords_trends.png)
-
-### LDA
-![alt text](img/commerzbank_report.png)
-![alt text](img/topic_fluctuation.png)
+- Stands for **Latent Dirichlet Allocation**
+- Our goals: 
+1) Find several topics from certain text; 
+2) Find paragraphs in the text, which are mostly related to the topic; 
+3) Learn the trend for topics during several years.
 
 <br>
 
 ## Reference
-- library spacy reference https://spacy.io/ 
+- library spacy: https://spacy.io/ 
+- library sklearn: http://scikit-learn.org/stable/ 
 
 
