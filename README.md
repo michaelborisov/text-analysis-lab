@@ -29,15 +29,15 @@ Apply machine learning techniques to find topics of paragraphs of documents.
 ### TF/IDF
 - Stands for **term frequency-inverse document frequency**
 - Our goal: 
-1) Find the most important words for certain text; 
-2) Learn the trend for this words during several years.
+    1. Find the most important words for certain text; 
+    2. Learn the trend for this words during several years.
 
 ### LDA
 - Stands for **Latent Dirichlet Allocation**
 - Our goals: 
-1) Find several topics from certain text; 
-2) Find paragraphs in the text, which are mostly related to the topic; 
-3) Learn the trend for topics during several years.
+    1. Find several topics from certain text; 
+    2. Find paragraphs in the text, which are mostly related to the topic; 
+    3. Learn the trend for topics during several years.
 
 <br>
 
