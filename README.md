@@ -21,14 +21,14 @@ Apply machine learning techniques to find topics of paragraphs of documents.
 ## Theory and Algorithm
 
 ### Preprocessing
-- remove all the unnecessary symbols;
-- remove all the stop words;
-- remove all the numbers;
-- classify all the words with their lemma.
+- Remove all the unnecessary symbols;
+- Remove all the stop words;
+- Remove all the numbers;
+- Classify all the words with their lemma.
 
 ### TF/IDF
 - Stands for **term frequency-inverse document frequency**
-- Our goal: 
+- Our goals: 
     1. Find the most important words for certain text; 
     2. Learn the trend for this words during several years.
 
