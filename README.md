@@ -31,6 +31,7 @@ Apply machine learning techniques to find topics of paragraphs of documents.
 - Our goals: 
     1. Find the most important words for certain text; 
     2. Learn the trend for this words during several years.
+    3. Apply LSI technique at TF/IDF matrix to implement an information query program.
 
 ### LDA
 - Stands for **Latent Dirichlet Allocation**
@@ -44,5 +45,7 @@ Apply machine learning techniques to find topics of paragraphs of documents.
 ## Reference
 - library spacy: https://spacy.io/ 
 - library sklearn: http://scikit-learn.org/stable/ 
-
+- Wikipedia for TF-IDF: https://en.wikipedia.org/wiki/Tf%E2%80%93idf
+- Wikipedia for LSI: https://en.wikipedia.org/wiki/Latent_semantic_analysis
+- Blei, D.M., Ng, A.Y. and Jordan, M.I., 2003. Latent dirichlet allocation. Journal of machine Learning research, 3(Jan), pp.993-1022.
 
