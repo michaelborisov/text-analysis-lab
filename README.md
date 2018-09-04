@@ -1,3 +1,8 @@
+## Important comment
+If do not want to download .ipynb files and face some issues with graph displaying, please refer to the [html](/html/) folder.
+
+<br>
+
 ## Overview
 Given set of financial reports, issued by companies, which are publicly traded. 
 Apply machine learning techniques to find topics of paragraphs of documents.
