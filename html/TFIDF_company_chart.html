@@ -11775,251 +11775,70 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="TF/IDF-keywords-trend">TF/IDF keywords trend<a class="anchor-link" href="#TF/IDF-keywords-trend">&#182;</a></h1>
+<h1 id="TF-IDF-keywords-trend">TF-IDF keywords trend<a class="anchor-link" href="#TF-IDF-keywords-trend">&#182;</a></h1>
 </div>
 </div>
 </div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
 <div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">spacy</span>
-<span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="k">import</span> <span class="n">TfidfVectorizer</span>
-<span class="kn">from</span> <span class="nn">spacy.lang.de.stop_words</span> <span class="k">import</span> <span class="n">STOP_WORDS</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="k">import</span> <span class="n">KMeans</span>
-<span class="kn">import</span> <span class="nn">time</span>
-</pre></div>
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Introduction-of-TF-IDF">Introduction of TF-IDF<a class="anchor-link" href="#Introduction-of-TF-IDF">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This file contains code about using TF-IDF technique to analyze keywords' trend of one company through several years. TF-IDF is exactly the abbreviation of the product of Term Frequency( $TF$) and Inverse Document Frequency( $IDF$). Here Term Frequency is defined as follow:</p>
+<p>$$tf(t,d) = number\ of\ word\ t\ in\ document\ d$$</p>
+<p>Here $t$ refers to a word, and $d$ refers to a document, therefore Term Frequency is just the number of this word in this document.</p>
+<p>Inverse Document Frequency is defined as following:</p>
+<p>$$idf(t,D) = log\frac{N}{\begin{vmatrix}\begin{Bmatrix}d \in D:t \in d \end{Bmatrix} \end{vmatrix}}$$</p>
+<p>Here $d$,$t$ again is document and word, respectively. The capital $D$ refers to corpus, which is a set containing all documents. The capital $N$ refers to how many documents in this corpus. And here the denominator is the number of documents which contain this word $t$ in the corpus $D$. We can see if one word occurs in many documents, then its IDF value will be low. This is meaningful since usually a word that occurs in more documents is less distinctive and meaningless.</p>
+<p>The mathematics form of TF-IDF is:</p>
+<p>$$tfidf(t,d,D) = tf(t,d)*idf(t,D)$$</p>
+<p>We can see that, for a given corpus $D$, we have two indices for this tfidf function. Therefore we can use a 2 dimension matrix to represent this function.</p>
+<p>The interpretation of this TF-IDF is, if for one word and one document, its TF-IDF value is high, then we can say this word should be important for this document and can be a key word of this document. This is because, a high TF-IDF value is reached by a high $TF$( Term Frequency) value and a high $IDF$( Inverse Document Frequency), which means this word occurs many times in this document, and nearly dose not occur in other documents. Therefore, this word makes this document distinctive from other documents, and can be seen as key word of this document.</p>
 
 </div>
 </div>
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Structure-of-this-notebook">Structure of this notebook<a class="anchor-link" href="#Structure-of-this-notebook">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>In this notebook, we first use TF-IDF technique to analyze BMW's annual report from 2010 to 2017, and get their keywords' trend. Then for some of these keywords, we indeed find the reason why these are keywords in these documents. 
+We also analyze DeutscheBank's annual report from 2010 to 2016, and gets their keywords' trend.</p>
+<p>Since notebook in github does not show the visualization images, we save all images in img folder, and show links to these images below each plot instruction. You can either click these links or check the <a href="https://github.com/michaelborisov/text-analysis-lab/tree/master/html">HTML file</a>, which contains both code and visualization images.</p>
 
+</div>
+</div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 <div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#other needed configurations</span>
-<span class="o">%</span><span class="k">run</span> src/file_utils.py
-<span class="o">%</span><span class="k">run</span> src/configuration.py
-<span class="o">%</span><span class="k">run</span> &quot;load_and_prepro_document.ipynb&quot;
-</pre></div>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">spacy</span>
+<span class="kn">from</span> <span class="nn">spacy.lang.de.stop_words</span> <span class="k">import</span> <span class="n">STOP_WORDS</span>
 
-</div>
-</div>
-</div>
+<span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="k">import</span> <span class="n">TfidfVectorizer</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="BMW-2010-2017">BMW 2010-2017<a class="anchor-link" href="#BMW-2010-2017">&#182;</a></h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#the file list of BMW from 2010 to 2017</span>
-<span class="n">bmw_lemm_docs_prep</span> <span class="o">=</span> <span class="p">[</span>
-     <span class="s1">&#39;BMW-AnnualReport-2010.json&#39;</span><span class="p">,</span> 
-     <span class="s1">&#39;BMW-AnnualReport-2011.json&#39;</span><span class="p">,</span> 
-     <span class="s1">&#39;BMW-AnnualReport-2012.json&#39;</span><span class="p">,</span>
-     <span class="s1">&#39;BMW-AnnualReport-2013.json&#39;</span><span class="p">,</span> 
-     <span class="s1">&#39;BMW-AnnualReport-2014.json&#39;</span><span class="p">,</span> 
-     <span class="s1">&#39;BMW-AnnualReport-2015.json&#39;</span><span class="p">,</span>
-     <span class="s1">&#39;BMW-AnnualReport-2016.json&#39;</span><span class="p">,</span> 
-     <span class="s1">&#39;BMW-AnnualReport-2017.json&#39;</span><span class="p">]</span>
-</pre></div>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">time</span>
 
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#stop tfidf from preprocessing and split the word</span>
-<span class="k">def</span> <span class="nf">preProcess</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">s</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#remove all the stop words and other meaningless characters</span>
-<span class="n">bmw_doc</span><span class="p">,</span> <span class="n">bmw_name</span><span class="o">=</span> <span class="n">get_clean_data</span><span class="p">(</span><span class="n">bmw_lemm_docs_prep</span><span class="p">)</span>
-
-<span class="c1">#do the TF/IDF and produce the tfidf-matrix</span>
-<span class="n">vectorizer_bmw</span> <span class="o">=</span> <span class="n">TfidfVectorizer</span><span class="p">()</span>
-<span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">tfidf_matrix_bmw</span> <span class="o">=</span> <span class="n">vectorizer_bmw</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">bmw_doc</span><span class="p">)</span>
-<span class="nb">print</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>0.2530484199523926
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[6]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#use pandas to show the result (make data structure more clear)</span>
-<span class="n">bmw_feature_names</span> <span class="o">=</span> <span class="n">vectorizer_bmw</span><span class="o">.</span><span class="n">get_feature_names</span><span class="p">()</span>
-<span class="n">bmw_corpus_index</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span>
-    <span class="s1">&#39;BMW-2010&#39;</span><span class="p">,</span> <span class="s1">&#39;BMW-2011&#39;</span><span class="p">,</span> <span class="s1">&#39;BMW-2012&#39;</span><span class="p">,</span> 
-    <span class="s1">&#39;BMW-2013&#39;</span><span class="p">,</span> <span class="s1">&#39;BMW-2014&#39;</span><span class="p">,</span> <span class="s1">&#39;BMW-2015&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;BMW-2016&#39;</span><span class="p">,</span> <span class="s1">&#39;BMW-2017&#39;</span><span class="p">]]</span>
-<span class="n">idf</span> <span class="o">=</span> <span class="n">vectorizer_bmw</span><span class="o">.</span><span class="n">idf_</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">tfidf_matrix_bmw</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">todense</span><span class="p">(),</span> <span class="n">index</span><span class="o">=</span><span class="n">bmw_feature_names</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">bmw_corpus_index</span><span class="p">)</span>
-<span class="n">df</span><span class="p">[</span><span class="s1">&#39;idf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">idf</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Deutsche-Bank-2010-2016">Deutsche Bank 2010-2016<a class="anchor-link" href="#Deutsche-Bank-2010-2016">&#182;</a></h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#the file list of Deutsche Bank from 2010 to 2017</span>
-<span class="n">db_lemm_docs_prep</span> <span class="o">=</span> <span class="p">[</span>
-     <span class="s1">&#39;DeutscheBank-AnnualReport-2010.json&#39;</span><span class="p">,</span> 
-     <span class="s1">&#39;DeutscheBank-AnnualReport-2011.json&#39;</span><span class="p">,</span> 
-     <span class="s1">&#39;DeutscheBank-AnnualReport-2012.json&#39;</span><span class="p">,</span>
-     <span class="s1">&#39;DeutscheBank-AnnualReport-2013.json&#39;</span><span class="p">,</span> 
-     <span class="s1">&#39;DeutscheBank-AnnualReport-2014.json&#39;</span><span class="p">,</span> 
-     <span class="s1">&#39;DeutscheBank-AnnualReport-2015.json&#39;</span><span class="p">,</span>
-     <span class="s1">&#39;DeutscheBank-AnnualReport-2016.json&#39;</span><span class="p">]</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#remove the stop words and other meaningless characters</span>
-<span class="n">db_doc</span><span class="p">,</span> <span class="n">db_name</span> <span class="o">=</span> <span class="n">get_clean_data</span><span class="p">(</span><span class="n">db_lemm_docs_prep</span><span class="p">)</span>
-
-<span class="c1">#do the TF/IDF and produce the tfidf-matrix</span>
-<span class="n">vectorizer_db</span> <span class="o">=</span> <span class="n">TfidfVectorizer</span><span class="p">()</span>
-<span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">tfidf_matrix_db</span> <span class="o">=</span> <span class="n">vectorizer_db</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">db_doc</span><span class="p">)</span>
-<span class="nb">print</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>0.45025014877319336
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[9]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#use pandas to show the result (make data structure more clear)</span>
-<span class="n">db_feature_names</span> <span class="o">=</span> <span class="n">vectorizer_db</span><span class="o">.</span><span class="n">get_feature_names</span><span class="p">()</span>
-<span class="n">db_corpus_index</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span>
-    <span class="s1">&#39;DB-2010&#39;</span><span class="p">,</span> <span class="s1">&#39;DB-2011&#39;</span><span class="p">,</span> <span class="s1">&#39;DB-2012&#39;</span><span class="p">,</span> 
-    <span class="s1">&#39;DB-2013&#39;</span><span class="p">,</span> <span class="s1">&#39;DB-2014&#39;</span><span class="p">,</span> <span class="s1">&#39;DB-2015&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;DB-2016&#39;</span><span class="p">]]</span>
-<span class="n">idf</span> <span class="o">=</span> <span class="n">vectorizer_db</span><span class="o">.</span><span class="n">idf_</span>
-<span class="n">df_db</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">tfidf_matrix_db</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">todense</span><span class="p">(),</span> <span class="n">index</span><span class="o">=</span><span class="n">db_feature_names</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">db_corpus_index</span><span class="p">)</span>
-<span class="n">df_db</span><span class="p">[</span><span class="s1">&#39;idf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">idf</span>
-</pre></div>
-
-</div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Visualization">Visualization<a class="anchor-link" href="#Visualization">&#182;</a></h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">plotly</span> <span class="k">as</span> <span class="nn">py</span>
+<span class="kn">import</span> <span class="nn">plotly</span> <span class="k">as</span> <span class="nn">py</span>
 <span class="kn">import</span> <span class="nn">plotly.graph_objs</span> <span class="k">as</span> <span class="nn">go</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
@@ -12051,6 +11870,249 @@ div#notebook {
 </div>
 
 </div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#other needed configurations</span>
+<span class="o">%</span><span class="k">run</span> src/file_utils.py
+<span class="o">%</span><span class="k">run</span> src/configuration.py
+<span class="o">%</span><span class="k">run</span> &quot;load_and_prepro_document.ipynb&quot;
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="BMW-2010-2017">BMW 2010-2017<a class="anchor-link" href="#BMW-2010-2017">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Here we start to apply TFIDF in BMW annual report from 2010-2017. The corpus here are these 8 documents.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#the file list of BMW from 2010 to 2017</span>
+<span class="n">bmw_lemm_docs_prep</span> <span class="o">=</span> <span class="p">[</span>
+     <span class="s1">&#39;BMW-AnnualReport-2010.json&#39;</span><span class="p">,</span> 
+     <span class="s1">&#39;BMW-AnnualReport-2011.json&#39;</span><span class="p">,</span> 
+     <span class="s1">&#39;BMW-AnnualReport-2012.json&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;BMW-AnnualReport-2013.json&#39;</span><span class="p">,</span> 
+     <span class="s1">&#39;BMW-AnnualReport-2014.json&#39;</span><span class="p">,</span> 
+     <span class="s1">&#39;BMW-AnnualReport-2015.json&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;BMW-AnnualReport-2016.json&#39;</span><span class="p">,</span> 
+     <span class="s1">&#39;BMW-AnnualReport-2017.json&#39;</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#stop tfidf from preprocessing and split the word</span>
+<span class="k">def</span> <span class="nf">preProcess</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">s</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#remove all the stop words and other meaningless characters</span>
+<span class="n">bmw_doc</span><span class="p">,</span> <span class="n">bmw_name</span><span class="o">=</span> <span class="n">get_clean_documents</span><span class="p">(</span><span class="n">bmw_lemm_docs_prep</span><span class="p">)</span>
+
+<span class="c1">#do the TF/IDF and produce the tfidf-matrix</span>
+<span class="n">vectorizer_bmw</span> <span class="o">=</span> <span class="n">TfidfVectorizer</span><span class="p">(</span><span class="n">preprocessor</span><span class="o">=</span><span class="n">preProcess</span><span class="p">)</span>
+<span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">tfidf_matrix_bmw</span> <span class="o">=</span> <span class="n">vectorizer_bmw</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">bmw_doc</span><span class="p">)</span>
+<span class="nb">print</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>0.2882106304168701
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#use pandas to make data structure more clear</span>
+<span class="n">bmw_feature_names</span> <span class="o">=</span> <span class="n">vectorizer_bmw</span><span class="o">.</span><span class="n">get_feature_names</span><span class="p">()</span>
+<span class="n">bmw_corpus_index</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span>
+    <span class="s1">&#39;BMW-2010&#39;</span><span class="p">,</span> <span class="s1">&#39;BMW-2011&#39;</span><span class="p">,</span> <span class="s1">&#39;BMW-2012&#39;</span><span class="p">,</span> 
+    <span class="s1">&#39;BMW-2013&#39;</span><span class="p">,</span> <span class="s1">&#39;BMW-2014&#39;</span><span class="p">,</span> <span class="s1">&#39;BMW-2015&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;BMW-2016&#39;</span><span class="p">,</span> <span class="s1">&#39;BMW-2017&#39;</span><span class="p">]]</span>
+<span class="n">idf</span> <span class="o">=</span> <span class="n">vectorizer_bmw</span><span class="o">.</span><span class="n">idf_</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">tfidf_matrix_bmw</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">todense</span><span class="p">(),</span> <span class="n">index</span><span class="o">=</span><span class="n">bmw_feature_names</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">bmw_corpus_index</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;idf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">idf</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Deutsche-Bank-2010-2016">Deutsche Bank 2010-2016<a class="anchor-link" href="#Deutsche-Bank-2010-2016">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Here is for Deutsche Bank's annual report. We do the same procedure.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#the file list of Deutsche Bank from 2010 to 2017</span>
+<span class="n">db_lemm_docs_prep</span> <span class="o">=</span> <span class="p">[</span>
+     <span class="s1">&#39;DeutscheBank-AnnualReport-2010.json&#39;</span><span class="p">,</span> 
+     <span class="s1">&#39;DeutscheBank-AnnualReport-2011.json&#39;</span><span class="p">,</span> 
+     <span class="s1">&#39;DeutscheBank-AnnualReport-2012.json&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;DeutscheBank-AnnualReport-2013.json&#39;</span><span class="p">,</span> 
+     <span class="s1">&#39;DeutscheBank-AnnualReport-2014.json&#39;</span><span class="p">,</span> 
+     <span class="s1">&#39;DeutscheBank-AnnualReport-2015.json&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;DeutscheBank-AnnualReport-2016.json&#39;</span><span class="p">]</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#remove the stop words and other meaningless characters</span>
+<span class="n">db_doc</span><span class="p">,</span> <span class="n">db_name</span> <span class="o">=</span> <span class="n">get_clean_documents</span><span class="p">(</span><span class="n">db_lemm_docs_prep</span><span class="p">)</span>
+
+<span class="c1">#do the TF/IDF and produce the tfidf-matrix</span>
+<span class="n">vectorizer_db</span> <span class="o">=</span> <span class="n">TfidfVectorizer</span><span class="p">()</span>
+<span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">tfidf_matrix_db</span> <span class="o">=</span> <span class="n">vectorizer_db</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">db_doc</span><span class="p">)</span>
+<span class="nb">print</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>0.4470093250274658
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#use pandas to make data structure more clear</span>
+<span class="n">db_feature_names</span> <span class="o">=</span> <span class="n">vectorizer_db</span><span class="o">.</span><span class="n">get_feature_names</span><span class="p">()</span>
+<span class="n">db_corpus_index</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">[</span>
+    <span class="s1">&#39;DB-2010&#39;</span><span class="p">,</span> <span class="s1">&#39;DB-2011&#39;</span><span class="p">,</span> <span class="s1">&#39;DB-2012&#39;</span><span class="p">,</span> 
+    <span class="s1">&#39;DB-2013&#39;</span><span class="p">,</span> <span class="s1">&#39;DB-2014&#39;</span><span class="p">,</span> <span class="s1">&#39;DB-2015&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;DB-2016&#39;</span><span class="p">]]</span>
+<span class="n">idf</span> <span class="o">=</span> <span class="n">vectorizer_db</span><span class="o">.</span><span class="n">idf_</span>
+<span class="n">df_db</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">tfidf_matrix_db</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">todense</span><span class="p">(),</span> <span class="n">index</span><span class="o">=</span><span class="n">db_feature_names</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">db_corpus_index</span><span class="p">)</span>
+<span class="n">df_db</span><span class="p">[</span><span class="s1">&#39;idf&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">idf</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="Visualization">Visualization<a class="anchor-link" href="#Visualization">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Here is code for visualization. The results is not shown in this notebook. Reader can get these results by either click the link before, or direct check the html file.</p>
+
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
@@ -12061,10 +12123,11 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#the keywords chosen from the BMW Annual reports</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># The keywords are manually chosen from the BMW Annual reports</span>
+<span class="c1"># They all have a high TF-IDF value, and looks meaningful.</span>
 <span class="n">key</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Husqvarna&#39;</span><span class="p">,</span> <span class="s1">&#39;aktienbasierte&#39;</span><span class="p">,</span> <span class="s1">&#39;Citroën&#39;</span><span class="p">,</span> <span class="s1">&#39;electrification&#39;</span><span class="p">,</span> <span class="s1">&#39;amsterdam&#39;</span><span class="p">,</span> <span class="s1">&#39;Drivenow&#39;</span><span class="p">,</span> <span class="s1">&#39;co2&#39;</span><span class="p">,</span> <span class="s1">&#39;brexit&#39;</span><span class="p">,</span> <span class="s1">&#39;HERE / Amsterdam&#39;</span><span class="p">,</span> <span class="s1">&#39;there&#39;</span><span class="p">]</span>
 </pre></div>
 
@@ -12075,7 +12138,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#get the value of certain row (as y-value of visualization result)</span>
@@ -12096,7 +12159,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="prompt input_prompt">In&nbsp;[23]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#x-value(year 2010-2017) of visualization result</span>
@@ -12118,7 +12181,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="prompt input_prompt">In&nbsp;[24]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#the layout of visualization of BMW (main title, axis title)</span>
@@ -12133,7 +12196,6 @@ div#notebook {
 
 <span class="c1">#draw the line chart</span>
 <span class="n">py</span><span class="o">.</span><span class="n">offline</span><span class="o">.</span><span class="n">iplot</span><span class="p">(</span><span class="n">fig_decay</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;BMW:TF-IDF keywords trend - decrease&#39;</span><span class="p">)</span>
-<span class="n">py</span><span class="o">.</span><span class="n">offline</span><span class="o">.</span><span class="n">iplot</span><span class="p">(</span><span class="n">fig_increase</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;BMW:TF-IDF keywords trend - increase&#39;</span><span class="p">)</span>
 </pre></div>
 
 </div>
@@ -12151,19 +12213,7 @@ div#notebook {
 
 
 <div class="output_html rendered_html output_subarea ">
-<div id="8289b35d-6637-42d3-b55f-d3fa7a54f6a8" style="height: 525px; width: 100%;" class="plotly-graph-div"></div><script type="text/javascript">require(["plotly"], function(Plotly) { window.PLOTLYENV=window.PLOTLYENV || {};window.PLOTLYENV.BASE_URL="https://plot.ly";Plotly.newPlot("8289b35d-6637-42d3-b55f-d3fa7a54f6a8", [{"mode": "lines+markers", "name": "Husqvarna", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0, 2017.0], "y": [0.02177643935218017, 0.019772659042221336, 0.02963686220697395, 0.018795087002581805, 0.0, 0.0, 0.001456255927845524, 0.001456255927845524, 1.251314428280906], "type": "scatter", "uid": "304c60ae-a3cd-11e8-87ab-4ba9460f4f5d"}, {"mode": "lines+markers", "name": "Citro\u00ebn", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0, 2017.0], "y": [0.0034540019709458076, 0.012544714440808626, 0.025070711532471333, 0.0017034994696036316, 0.0, 0.0, 0.0, 0.0, 1.587786664902119], "type": "scatter", "uid": "304c6216-a3cd-11e8-87ab-4ba9460f4f5d"}], {"title": "BMW:TF-IDF keywords trend - decrease", "xaxis": {"title": "years"}}, {"showLink": true, "linkText": "Export to plot.ly"})});</script>
-</div>
-
-</div>
-
-<div class="output_area">
-
-<div class="prompt"></div>
-
-
-
-<div class="output_html rendered_html output_subarea ">
-<div id="45b9fce5-611d-47a5-afee-326a9abc9e23" style="height: 525px; width: 100%;" class="plotly-graph-div"></div><script type="text/javascript">require(["plotly"], function(Plotly) { window.PLOTLYENV=window.PLOTLYENV || {};window.PLOTLYENV.BASE_URL="https://plot.ly";Plotly.newPlot("45b9fce5-611d-47a5-afee-326a9abc9e23", [{"mode": "lines+markers", "name": "Drivenow", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0, 2017.0], "y": [0.0, 0.013877805257339466, 0.016388806983860908, 0.010793191336198635, 0.020866608082130016, 0.021614845496604414, 0.02081367413248565, 0.02081367413248565, 1.1177830356563834], "type": "scatter", "uid": "3054d306-a3cd-11e8-87ab-4ba9460f4f5d"}, {"mode": "lines+markers", "name": "co2", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0, 2017.0], "y": [0.0, 0.0, 0.0, 0.0017034994696036316, 0.001646698121672266, 0.0, 0.04065239015430882, 0.04065239015430882, 1.587786664902119], "type": "scatter", "uid": "3054d43c-a3cd-11e8-87ab-4ba9460f4f5d"}, {"mode": "lines+markers", "name": "brexit", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0, 2017.0], "y": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.026865575655537523, 0.026865575655537523, 2.09861228866811], "type": "scatter", "uid": "3054d504-a3cd-11e8-87ab-4ba9460f4f5d"}, {"mode": "lines+markers", "name": "HERE / Amsterdam", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0, 2017.0], "y": [0.0, 0.0, 0.0, 0.0, 0.0, 0.027646107645330157, 0.025290313635104235, 0.025290313635104235, 1.8109302162163288], "type": "scatter", "uid": "3054d5ae-a3cd-11e8-87ab-4ba9460f4f5d"}], {"title": "BMW:TF-IDF keywords trend - increase", "xaxis": {"title": "years"}}, {"showLink": true, "linkText": "Export to plot.ly"})});</script>
+<div id="fcdd17fd-5a1b-40a4-93d6-c3665078b73a" style="height: 525px; width: 100%;" class="plotly-graph-div"></div><script type="text/javascript">require(["plotly"], function(Plotly) { window.PLOTLYENV=window.PLOTLYENV || {};window.PLOTLYENV.BASE_URL="https://plot.ly";Plotly.newPlot("fcdd17fd-5a1b-40a4-93d6-c3665078b73a", [{"mode": "lines+markers", "name": "Husqvarna", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0, 2017.0], "y": [0.02177643935218017, 0.019772659042221336, 0.02963686220697395, 0.018795087002581805, 0.0, 0.0, 0.001456255927845524, 0.001456255927845524, 1.251314428280906], "type": "scatter", "uid": "5adb259c-bf77-11e8-a15e-89dd435d495b"}, {"mode": "lines+markers", "name": "Citro\u00ebn", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0, 2017.0], "y": [0.0034540019709458076, 0.012544714440808626, 0.025070711532471333, 0.0017034994696036316, 0.0, 0.0, 0.0, 0.0, 1.587786664902119], "type": "scatter", "uid": "5adb27f4-bf77-11e8-a15e-89dd435d495b"}], {"title": "BMW:TF-IDF keywords trend - decrease", "xaxis": {"title": "years"}}, {"showLink": true, "linkText": "Export to plot.ly"})});</script>
 </div>
 
 </div>
@@ -12176,16 +12226,76 @@ div#notebook {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p><a href="https://github.com/michaelborisov/text-analysis-lab/blob/master/img/BMW_TFIDF_keywords_trends.png">Link to decrease trend image</a></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[25]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">py</span><span class="o">.</span><span class="n">offline</span><span class="o">.</span><span class="n">iplot</span><span class="p">(</span><span class="n">fig_increase</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;BMW:TF-IDF keywords trend - increase&#39;</span><span class="p">)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+
+<div class="output_html rendered_html output_subarea ">
+<div id="d22c500f-8298-4d95-a243-c1519fd28237" style="height: 525px; width: 100%;" class="plotly-graph-div"></div><script type="text/javascript">require(["plotly"], function(Plotly) { window.PLOTLYENV=window.PLOTLYENV || {};window.PLOTLYENV.BASE_URL="https://plot.ly";Plotly.newPlot("d22c500f-8298-4d95-a243-c1519fd28237", [{"mode": "lines+markers", "name": "Drivenow", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0, 2017.0], "y": [0.0, 0.013877805257339466, 0.016388806983860908, 0.010793191336198635, 0.020866608082130016, 0.021614845496604414, 0.02081367413248565, 0.02081367413248565, 1.1177830356563834], "type": "scatter", "uid": "5ba9c442-bf77-11e8-a15e-89dd435d495b"}, {"mode": "lines+markers", "name": "co2", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0, 2017.0], "y": [0.0, 0.0, 0.0, 0.0017034994696036316, 0.001646698121672266, 0.0, 0.04065239015430882, 0.04065239015430882, 1.587786664902119], "type": "scatter", "uid": "5ba9c654-bf77-11e8-a15e-89dd435d495b"}, {"mode": "lines+markers", "name": "brexit", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0, 2017.0], "y": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.026865575655537523, 0.026865575655537523, 2.09861228866811], "type": "scatter", "uid": "5ba9c78a-bf77-11e8-a15e-89dd435d495b"}, {"mode": "lines+markers", "name": "HERE / Amsterdam", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0, 2017.0], "y": [0.0, 0.0, 0.0, 0.0, 0.0, 0.027646107645330157, 0.025290313635104235, 0.025290313635104235, 1.8109302162163288], "type": "scatter", "uid": "5ba9c898-bf77-11e8-a15e-89dd435d495b"}], {"title": "BMW:TF-IDF keywords trend - increase", "xaxis": {"title": "years"}}, {"showLink": true, "linkText": "Export to plot.ly"})});</script>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><a href="https://github.com/michaelborisov/text-analysis-lab/blob/master/img/BMW_TFIDF_keywords_trends_increase.png">link to increase trend image</a></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Here we show some key words we extract from BMW's annual reports, and they are exactly meaningful. For example, this "HERE \ Amsterdam" word is the key word of one year annual report, since at that year, BMW bought a navigation company called "HERE" in Amsterdam.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Deutsche-Bank">Deutsche Bank<a class="anchor-link" href="#Deutsche-Bank">&#182;</a></h2>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="prompt input_prompt">In&nbsp;[26]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#the keywords chosen from the Deutsche Bank Annual reports</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># The keywords are manually chosen from the Deutsche Bank Annual reports.</span>
+<span class="c1"># They all have a high TF-IDF value, and looks meaningful.</span>
 <span class="n">key_co</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Goodwill&#39;</span><span class="p">,</span> <span class="s1">&#39;ABN AMRO&#39;</span><span class="p">,</span> <span class="s1">&#39;Deutsche Bank National Trust Co.&#39;</span><span class="p">]</span>
 </pre></div>
 
@@ -12196,7 +12306,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[16]:</div>
+<div class="prompt input_prompt">In&nbsp;[27]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#get the value of certain row (as y-value of visualization result)</span>
@@ -12212,7 +12322,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[17]:</div>
+<div class="prompt input_prompt">In&nbsp;[28]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#x-value(year 2010-2016) of visualization result</span>
@@ -12231,7 +12341,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="prompt input_prompt">In&nbsp;[29]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#the layout of visualization of Deutsche Bank (main title, axis title)</span>
@@ -12259,7 +12369,7 @@ div#notebook {
 
 
 <div class="output_html rendered_html output_subarea ">
-<div id="7ad9fbd8-e35a-4030-9e36-5e5fe6b4c7ac" style="height: 525px; width: 100%;" class="plotly-graph-div"></div><script type="text/javascript">require(["plotly"], function(Plotly) { window.PLOTLYENV=window.PLOTLYENV || {};window.PLOTLYENV.BASE_URL="https://plot.ly";Plotly.newPlot("7ad9fbd8-e35a-4030-9e36-5e5fe6b4c7ac", [{"mode": "lines+markers", "name": "Goodwill", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0], "y": [0.04991548613574003, 0.0011506396039015516, 0.0005152863584182154, 0.0, 0.0, 0.0011947623249202435, 0.0005125010967421039, 1.2876820724517808], "type": "scatter", "uid": "349cf600-a3cd-11e8-87ab-4ba9460f4f5d"}, {"mode": "lines+markers", "name": "ABN AMRO", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0], "y": [0.021727917494380956, 0.013232355444867842, 0.00772929537627323, 0.0010662206435667523, 0.00044069063733971576, 0.0, 0.0, 1.2876820724517808], "type": "scatter", "uid": "349cf7d6-a3cd-11e8-87ab-4ba9460f4f5d"}, {"mode": "lines+markers", "name": "Deutsche Bank National Trust Co.", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0], "y": [0.0, 0.0, 0.0, 0.0, 0.006101192461877822, 0.022054700124159173, 0.0, 1.9808292530117262], "type": "scatter", "uid": "349cf8c6-a3cd-11e8-87ab-4ba9460f4f5d"}], {"title": "Deutsche Bank:TF-IDF keywords trend", "xaxis": {"title": "years"}}, {"showLink": true, "linkText": "Export to plot.ly"})});</script>
+<div id="65c09140-76a8-49e1-870d-9cfeb8926579" style="height: 525px; width: 100%;" class="plotly-graph-div"></div><script type="text/javascript">require(["plotly"], function(Plotly) { window.PLOTLYENV=window.PLOTLYENV || {};window.PLOTLYENV.BASE_URL="https://plot.ly";Plotly.newPlot("65c09140-76a8-49e1-870d-9cfeb8926579", [{"mode": "lines+markers", "name": "Goodwill", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0], "y": [0.04991548613574003, 0.0011506396039015516, 0.0005152863584182154, 0.0, 0.0, 0.0011947623249202435, 0.0005125010967421039, 1.2876820724517808], "type": "scatter", "uid": "5edd2514-bf77-11e8-a15e-89dd435d495b"}, {"mode": "lines+markers", "name": "ABN AMRO", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0], "y": [0.021727917494380956, 0.013232355444867842, 0.00772929537627323, 0.0010662206435667523, 0.00044069063733971576, 0.0, 0.0, 1.2876820724517808], "type": "scatter", "uid": "5edd2780-bf77-11e8-a15e-89dd435d495b"}, {"mode": "lines+markers", "name": "Deutsche Bank National Trust Co.", "x": [2010.0, 2011.0, 2012.0, 2013.0, 2014.0, 2015.0, 2016.0], "y": [0.0, 0.0, 0.0, 0.0, 0.006101192461877822, 0.022054700124159173, 0.0, 1.9808292530117262], "type": "scatter", "uid": "5edd28fc-bf77-11e8-a15e-89dd435d495b"}], {"title": "Deutsche Bank:TF-IDF keywords trend", "xaxis": {"title": "years"}}, {"showLink": true, "linkText": "Export to plot.ly"})});</script>
 </div>
 
 </div>
@@ -12267,6 +12377,33 @@ div#notebook {
 </div>
 </div>
 
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><a href="https://github.com/michaelborisov/text-analysis-lab/blob/master/img/deutsche_bank_TFIDF_keywords_trend.png">link to Deutsche Bank image</a></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Here is key words for Deutsche Bank. And they are also meaningful. For instance, this "Deutsche Bank National Trust Co." is actually the name of Deutsche Bank America, and in that year, Deutsche bank got a high penalty from USA government.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Summary">Summary<a class="anchor-link" href="#Summary">&#182;</a></h2><p>All these result shows, that TFIDF technique is a easy and effective way to find key words for each documents. However, TFIDF can only find keywords, which make this document different from other documents, but it cannot get topics which appear in every documents but also important.</p>
+
+</div>
+</div>
 </div>
     </div>
   </div>
